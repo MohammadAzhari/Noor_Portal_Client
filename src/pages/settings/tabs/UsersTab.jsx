@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
@@ -12,7 +12,11 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { DataGrid } from '@mui/x-data-grid';
-import { arrayWrapperWithId } from '../../../utils/handyFunctions';
+import { arrayWrapperWithId, reqHandler } from '../../../utils/handyFunctions';
+import api from '../../../api/requests';
+import { FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material';
+import { toast } from 'react-toastify';
+import toastMessages from '../../../utils/toastmessages';
 
 export default function UsersTab() {
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
@@ -21,6 +25,19 @@ export default function UsersTab() {
   const [userEmail, setUserEmail] = useState('');
   const [userPassword, setUserPassword] = useState('');
   const [userRole, setUserRole] = useState('');
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = reqHandler(async () => {
+    const res = await api.getUsers();
+    setUsers(res.users);
+  }, setIsLoading);
 
   const usersColumns = [
     { field: 'username', headerName: 'Username', flex: 1 },
@@ -39,26 +56,6 @@ export default function UsersTab() {
     },
   ];
 
-  const usersRows = [
-    {
-      id: 1,
-      username: 'John Doe',
-      email: 'johndoe@example.com',
-      role: 'Admin',
-    },
-    {
-      id: 2,
-      username: 'Jane Smith',
-      email: 'janesmith@example.com',
-      role: 'Reception',
-    },
-    {
-      id: 3,
-      username: 'Bob Johnson',
-      email: 'bobjohnson@example.com',
-      role: 'Accounting',
-    },
-  ];
   const handleAddUserDialogOpen = () => {
     setAddUserDialogOpen(true);
   };
@@ -85,9 +82,16 @@ export default function UsersTab() {
 
   const handleAddUserSubmit = (event) => {
     event.preventDefault();
-    console.log(
-      `Submitting user data: ${userName}, ${userEmail}, ${userPassword}, ${userRole}`
-    );
+    reqHandler(async () => {
+      await api.createUser({
+        username: userName,
+        email: userEmail,
+        password: userPassword,
+        role: userRole,
+      });
+      toast.success(toastMessages.created);
+      fetchData();
+    }, setIsLoading)();
     handleAddUserDialogClose();
   };
 
@@ -103,10 +107,10 @@ export default function UsersTab() {
         </Button>
       </Box>
       <DataGrid
-        rows={arrayWrapperWithId(usersRows)}
+        rows={arrayWrapperWithId(users)}
         columns={usersColumns}
-        pageSize={5}
-        rowsPerPageOptions={[5, 10, 20]}
+        loading={isLoading}
+        autoHeight
       />
       <Dialog open={addUserDialogOpen} onClose={handleAddUserDialogClose}>
         <DialogTitle>Add User</DialogTitle>
@@ -142,22 +146,41 @@ export default function UsersTab() {
             value={userPassword}
             onChange={handleUserPasswordChange}
           />
-          <Select
-            fullWidth
+          <RadioGroup
+            sx={{ mt: 2 }}
+            row
             value={userRole}
             onChange={handleUserRoleChange}
-            label='Role'
-            required
-            id='role'
           >
-            <MenuItem value='admin'>Admin</MenuItem>
-            <MenuItem value='reception'>Reception</MenuItem>
-            <MenuItem value='accounting'>Accounting</MenuItem>
-          </Select>
+            <FormControlLabel value='admin' control={<Radio />} label='Admin' />
+            <FormControlLabel
+              value='reception'
+              control={<Radio />}
+              label='Reception'
+            />
+            <FormControlLabel
+              value='accounting'
+              control={<Radio />}
+              label='Accounting'
+            />
+          </RadioGroup>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleAddUserDialogClose}>Cancel</Button>
-          <Button onClick={handleAddUserSubmit}>Submit</Button>
+          <Button
+            variant='outlined'
+            color='error'
+            onClick={handleAddUserDialogClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant='outlined'
+            color='success'
+            disabled={isLoading}
+            onClick={handleAddUserSubmit}
+          >
+            Submit
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

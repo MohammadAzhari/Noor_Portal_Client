@@ -10,7 +10,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import { Add } from '@mui/icons-material';
 
 const Container = styled(Box)({
-  maxWidth: 800,
+  flex: 2,
   margin: '0 auto',
   padding: '16px',
 });
@@ -114,7 +114,9 @@ const CustomerPackages = () => {
     <Container>
       <Box
         sx={{
+          flex: 2,
           display: 'flex',
+          width: '100%',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}

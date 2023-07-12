@@ -16,6 +16,7 @@ import { toast } from 'react-toastify';
 import CreateCustomerForm from '../../components/CreateCustomerForm';
 import ConformationDialog from '../../components/ConformationDialog';
 import toastMessages from '../../utils/toastmessages';
+import { reqHandler } from '../../utils/handyFunctions';
 
 function CustomerListPage() {
   const [openAddCustomerFrom, setOpenAddCustomerForm] = useState(false);
@@ -27,27 +28,16 @@ function CustomerListPage() {
   });
   const [deletedId, setDeletedId] = useState(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const response = await api.getCustomers(searchFilters);
-      setRows(response.customers);
-    } catch (error) {
-      toast.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const fetchData = reqHandler(async () => {
+    const response = await api.getCustomers(searchFilters);
+    setRows(response.customers);
+  }, setIsLoading);
 
-  const handleDeleteCustomer = async () => {
-    try {
-      await api.deleteCustomer(deletedId);
-      toast.success(toastMessages.deleted);
-      fetchData();
-    } catch (error) {
-      toast.error(error);
-    }
-  };
+  const handleDeleteCustomer = reqHandler(async () => {
+    await api.deleteCustomer(deletedId);
+    toast.success(toastMessages.deleted);
+    fetchData();
+  }, setIsLoading);
 
   useEffect(() => {
     fetchData();

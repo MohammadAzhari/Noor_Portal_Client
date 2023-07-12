@@ -12,12 +12,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { DataGrid } from '@mui/x-data-grid';
 import { arrayWrapperWithId, reqHandler } from '../../../utils/handyFunctions';
 import api from '../../../api/requests';
+import { toast } from 'react-toastify';
+import toastMessages from '../../../utils/toastmessages';
+import ConformationDialog from '../../../components/ConformationDialog';
 
 export default function SectionsTab() {
   const [addSectionDialogOpen, setAddSectionDialogOpen] = useState(false);
   const [sectionName, setSectionName] = useState('');
   const [serviceSectionsRows, setServiceSectionsRows] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [deletedId, setDeletedId] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -38,10 +42,22 @@ export default function SectionsTab() {
     setSectionName(event.target.value);
   };
 
-  const handleAddSectionSubmit = async (event) => {
+  const handleAddSectionSubmit = (event) => {
     event.preventDefault();
-    console.log(`Submitting section name: ${sectionName}`);
-    handleAddSectionDialogClose();
+    reqHandler(async () => {
+      await api.createSectionForServices({ name: sectionName });
+      toast.success(toastMessages.created);
+      handleAddSectionDialogClose();
+      fetchData();
+    }, setIsLoading)();
+  };
+
+  const handleDeleteSection = async () => {
+    reqHandler(async () => {
+      await api.deleteSectionForServices(deletedId);
+      toast.success(toastMessages.deleted);
+      fetchData();
+    }, setIsLoading)();
   };
 
   const serviceSectionsColumns = [
@@ -52,7 +68,10 @@ export default function SectionsTab() {
       flex: 1,
       sortable: false,
       renderCell: (params) => (
-        <IconButton sx={{ color: 'error.main' }}>
+        <IconButton
+          onClick={() => setDeletedId(params.id)}
+          sx={{ color: 'error.main' }}
+        >
           <DeleteIcon />
         </IconButton>
       ),
@@ -61,6 +80,11 @@ export default function SectionsTab() {
 
   return (
     <Box sx={{ p: 2 }}>
+      <ConformationDialog
+        isOpen={deletedId !== false}
+        handleClose={() => setDeletedId(false)}
+        onConfirm={handleDeleteSection}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button
           variant='contained'
@@ -92,10 +116,19 @@ export default function SectionsTab() {
           />
         </DialogContent>
         <DialogActions>
-          <Button color='error' onClick={handleAddSectionDialogClose}>
+          <Button
+            color='error'
+            variant='outlined'
+            onClick={handleAddSectionDialogClose}
+          >
             Cancel
           </Button>
-          <Button variant='contained' onClick={handleAddSectionSubmit}>
+          <Button
+            variant='outlined'
+            color='success'
+            disabled={isLoading}
+            onClick={handleAddSectionSubmit}
+          >
             Submit
           </Button>
         </DialogActions>

@@ -1,15 +1,17 @@
 import { toast } from 'react-toastify';
 
 export const arrayWrapperWithId = (arr) =>
-  arr.map((item, i) => ({ ...item, id: i }));
+  arr.map((item) => ({ ...item, id: item._id }));
 
 export const reqHandler = (request, setIsLoading) => async () => {
   setIsLoading(true);
   try {
     await request();
   } catch (error) {
-    toast.error(error);
+    toastError(error);
   } finally {
     setIsLoading(false);
   }
 };
+
+export const toastError = (error) => toast.error(error?.message ?? error);
