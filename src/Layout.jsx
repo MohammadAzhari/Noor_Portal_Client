@@ -89,6 +89,7 @@ function Layout(props) {
             px: 3,
             backgroundColor: '#eee',
             height: '100vh',
+            position: 'fixed',
           }}
         >
           <Box sx={{ width: '100%' }}>
@@ -108,7 +109,10 @@ function Layout(props) {
         </Box>
       )}
       {/* Main content */}
-      <Box component='main' sx={{ flexGrow: 1, p: 3 }}>
+      <Box
+        component='main'
+        sx={{ flexGrow: 1, p: 3, ml: isSidebarOpen ? '13%' : '2px' }}
+      >
         <AppBar position='static' color='default'>
           <Toolbar>
             <IconButton

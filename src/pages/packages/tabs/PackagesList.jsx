@@ -1,6 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, IconButton, TextField, Typography } from '@mui/material';
-import { Cancel as CancelIcon, CheckCircle } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Chip,
+  Grid,
+  IconButton,
+  TextField,
+  Typography,
+} from '@mui/material';
+import {
+  AccountCircle,
+  Cancel as CancelIcon,
+  CheckCircle,
+  Email,
+} from '@mui/icons-material';
 import { arrayWrapperWithId, reqHandler } from '../../../utils/handyFunctions';
 import { DataGrid } from '@mui/x-data-grid';
 import api from '../../../api/requests';
@@ -30,55 +43,35 @@ export default function PackagesList() {
 
   const columns = [
     { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'createdBy', headerName: 'Created By', flex: 1 },
+    {
+      field: 'createdBy',
+      headerName: 'Created By',
+      flex: 1,
+      renderCell: ({ row }) => (
+        <Box spacing={2} flexDirection='column' alignItems='center'>
+          <Box display={'flex'} alignItems={'center'} gap={2}>
+            <AccountCircle />
+            <span>{row.createdBy.username}</span>
+          </Box>
+          <Box display={'flex'} alignItems={'center'} gap={2}>
+            <Email />
+            <span>{row.createdBy.email}</span>
+          </Box>
+        </Box>
+      ),
+    },
     {
       field: 'services',
       headerName: 'Services',
       flex: 1,
       renderCell: (params) => (
-        <div>
-          {params.value.map((service) => (
-            <Typography key={service} variant='body2'>
-              {service}
+        <Box sx={{ overflowY: 'scroll', width: '100%' }}>
+          {params.value.map((service, i) => (
+            <Typography key={i} variant='body2'>
+              <Chip label={i + 1} /> {service.name}
             </Typography>
           ))}
-        </div>
-      ),
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      flex: 1,
-      renderCell: (params) => (
-        <Typography
-          variant='body2'
-          sx={{
-            color:
-              params.value === 'Active'
-                ? 'success.main'
-                : params.value === 'Inactive'
-                ? 'error.main'
-                : 'text.primary',
-          }}
-        >
-          {params.value}
-        </Typography>
-      ),
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      flex: 1,
-      sortable: false,
-      renderCell: (params) => (
-        <IconButton
-          sx={{
-            color:
-              params.row.status === 'Active' ? 'success.main' : 'error.main',
-          }}
-        >
-          {params.row.status === 'Active' ? <CheckCircle /> : <CancelIcon />}
-        </IconButton>
+        </Box>
       ),
     },
   ];
@@ -103,6 +96,7 @@ export default function PackagesList() {
         rows={arrayWrapperWithId(packages)}
         loading={isLoading}
         columns={columns}
+        rowHeight={80}
         autoHeight
       />
     </Box>

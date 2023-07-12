@@ -36,7 +36,7 @@ const initialFilterState = {
   section: 'all',
 };
 
-const ServicesPage = ({ fromPackages }) => {
+const ServicesPage = ({ fromPackages, handleAddRows }) => {
   const [services, setServices] = useState([]);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [serviceForm, setServiceForm] = useState(initialServiceState);
@@ -89,7 +89,7 @@ const ServicesPage = ({ fromPackages }) => {
     return <strong>{params.value}</strong>;
   };
 
-  const columns = [
+  let columns = [
     {
       field: 'name',
       headerName: 'Name',
@@ -117,20 +117,23 @@ const ServicesPage = ({ fromPackages }) => {
   ];
 
   if (fromPackages) {
-    columns.push({
-      field: 'actions',
-      headerName: 'Add',
-      flex: 1,
-      renderCell: (params) => (
-        <Button
-          variant='contained'
-          onClick={fromPackages.handleAddRows(params)}
-          endIcon={<Add />}
-        >
-          add
-        </Button>
-      ),
-    });
+    columns = [
+      ...columns,
+      {
+        field: 'actions',
+        headerName: 'Add',
+        flex: 1,
+        renderCell: (params) => (
+          <Button
+            variant='contained'
+            onClick={() => handleAddRows(params.row)}
+            endIcon={<Add />}
+          >
+            add
+          </Button>
+        ),
+      },
+    ];
   }
 
   return (
